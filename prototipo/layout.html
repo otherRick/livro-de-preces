@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Livro de Orações Online</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --capa:#5b3f2e; --capa-txt:#f3e8d3; --papel:#fbf5e6; --pauta:#c5d3e0; --margem:#e1a0a0;
+  --tinta:#243654; --suave:#6b6558; --acento:#e3aa5a; --acento-txt:#2a1c10; --dobra:rgba(60,40,20,.14);
+  --mao:'Patrick Hand','Segoe Print','Bradley Hand','Comic Sans MS',cursive;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --linhas:12;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--capa:#2a211a;--papel:#211d17;--pauta:#38424f;--margem:#7b4848;--tinta:#eadfc8;--suave:#a89f8e;--dobra:rgba(0,0,0,.45)}
+}
+:root[data-theme="dark"]{--capa:#2a211a;--papel:#211d17;--pauta:#38424f;--margem:#7b4848;--tinta:#eadfc8;--suave:#a89f8e;--dobra:rgba(0,0,0,.45)}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--capa)}
+body{height:100%;margin:0;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none;
+  background:var(--capa);color:var(--tinta);font-family:var(--sans)}
+[hidden]{display:none!important}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+
+.abas{display:flex;gap:6px;padding:10px 8px 0}
+.aba{flex:1;min-height:52px;border:0;border-radius:14px 14px 0 0;font:700 20px var(--sans);
+  background:rgba(255,255,255,.10);color:var(--capa-txt)}
+.aba.ativo{background:var(--papel);color:var(--tinta)}
+
+.livro{flex:1;min-height:0;display:flex;flex-direction:column;margin:0 8px;background:var(--papel);
+  box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;border-bottom:1px solid var(--pauta)}
+.seta{width:56px;height:44px;font-size:32px;line-height:1;background:none;color:var(--tinta);
+  border:2px solid var(--pauta);border-radius:10px}
+.seta:disabled{opacity:.3;cursor:default}
+#pos{font:18px var(--sans);color:var(--suave)}
+
+.paginas{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.paginas::-webkit-scrollbar{display:none}
+.pagina{flex:0 0 100%;min-width:0;display:flex;flex-direction:column;position:relative;
+  scroll-snap-align:start;scroll-snap-stop:always;
+  background:linear-gradient(90deg,var(--dobra) 0,transparent 16px),var(--papel)}
+.pagina::before{content:"";position:absolute;top:0;bottom:0;left:40px;width:2px;background:var(--margem)}
+.data{padding:8px 16px 2px 52px;font:22px var(--mao);color:var(--suave);border-bottom:1px solid var(--pauta)}
+.linhas{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--linhas),minmax(0,1fr))}
+.linha{display:flex;align-items:flex-end;min-width:0;overflow:hidden;padding:0 12px 1px 52px;border-bottom:1px solid var(--pauta)}
+.nome{display:flex;align-items:flex-end;width:100%;height:100%;min-width:0;padding:0;border:0;background:none;
+  text-align:left;color:var(--tinta);font:clamp(17px,3.4vh,26px)/1.1 var(--mao);white-space:nowrap;overflow:hidden}
+.nome span{flex:none}
+
+.rodape{padding:8px 8px 10px;color:var(--capa-txt)}
+.estado{display:flex;align-items:center;gap:10px;min-height:36px;font:17px var(--sans)}
+.estado button{background:none;border:0;color:var(--acento);font:700 17px var(--sans);text-decoration:underline;padding:6px 4px;min-height:36px}
+#sobre{margin-left:auto}
+#f{display:flex;gap:8px}
+#nome{flex:1;min-width:0;height:54px;padding:0 14px;font:22px var(--mao);border-radius:12px;border:2px solid transparent;
+  background:var(--papel);color:var(--tinta)}
+#nome::placeholder{color:var(--suave)}
+.enviar{height:54px;padding:0 20px;font:700 19px var(--sans);border:0;border-radius:12px;background:var(--acento);color:var(--acento-txt)}
+
+#folha{position:fixed;inset:0;z-index:10}
+.fundo{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.painel{position:absolute;left:0;right:0;bottom:0;background:var(--papel);border-radius:18px 18px 0 0;
+  padding:20px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.painel h2{font:400 28px var(--mao);margin:0 0 6px;word-break:break-word}
+.painel p{margin:0 0 8px;color:var(--suave);font:17px/1.4 var(--sans)}
+#f-a button{display:block;width:100%;min-height:54px;margin-top:8px;font:700 18px var(--sans);
+  border-radius:12px;border:2px solid var(--tinta);background:var(--acento);color:var(--acento-txt)}
+#f-a .sec{background:none;color:var(--tinta)}
+</style>
+</head>
+<body>
+<header class="abas" role="tablist" aria-label="Livros">
+  <button class="aba ativo" role="tab" data-l="vivos" aria-selected="true">Vivos</button>
+  <button class="aba" role="tab" data-l="mortos" aria-selected="false">Mortos</button>
+</header>
+
+<main class="livro">
+  <div class="nav">
+    <button class="seta" id="ant" aria-label="Página anterior">‹</button>
+    <span id="pos" aria-live="polite"></span>
+    <button class="seta" id="prox" aria-label="Próxima página">›</button>
+  </div>
+  <div class="paginas" id="p-vivos"></div>
+  <div class="paginas" id="p-mortos" hidden></div>
+</main>
+
+<footer class="rodape">
+  <div class="estado" aria-live="polite">
+    <span id="msg"></span><button id="desf" hidden>Desfazer</button><button id="sobre">Sobre</button>
+  </div>
+  <form id="f" autocomplete="off">
+    <input id="nome" maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send"
+           autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome">
+    <button class="enviar">Escrever</button>
+  </form>
+</footer>
+
+<div id="folha" hidden>
+  <div class="fundo"></div>
+  <div class="painel" role="dialog" aria-modal="true"><h2 id="f-t"></h2><p id="f-p"></p><div id="f-a"></div></div>
+</div>
+
+<script>
+// Protótipo: dados falsos, tudo em memória (recarregar zera). Sem backend.
+const N = 12, $ = id => document.getElementById(id);
+const hoje = new Date(), dia = n => new Date(hoje.getTime() - n * 864e5);
+const fmt = d => new Intl.DateTimeFormat('pt-BR', {day:'numeric', month:'long', year:'numeric'}).format(d);
+const suave = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let uid = 0, atual = 'vivos', ultimo = null, tm;
+const mk = (t, propria = false) => ({id: ++uid, texto: t, propria, t: 0, oculto: false});
+const V = ["Mestre Jampa","Maria das Graças","José Carlos Lima","Ani Tenzin","Helena Souza","Joaquim Ribeiro",
+  "Ana Beatriz Costa","Pedro Henrique","Sônia Regina","Lama Dorje","Luiza Andrade","Antônio Carlos","Rita de Cássia",
+  "Marcos Vinícius","Tereza Cristina","Padma Silva","Francisco de Assis","Sr. Manoel","Dra. Lúcia Santos",
+  "José Antônio de Albuquerque Cavalcanti"];
+const M = ["Vovó Nazaré","Tio Geraldo","Benedito Alves","Maria Aparecida","Osvaldo Pereira","Dona Iracema",
+  "Raimundo Nonato","Lourdes Ferreira","Sebastião Rocha","Ana Clara","Jorge Amado Filho","Cecília Martins"];
+const cheia = (L, k) => Array.from({length: N}, (_, i) => mk(L[(i + k) % L.length]));
+const estado = {
+  vivos:  {pag: [{d: dia(6), n: cheia(V, 0)}, {d: dia(2), n: cheia(V, 7)}, {d: hoje, n: [V[3], V[19], V[1], V[12], V[5]].map(t => mk(t))}]},
+  mortos: {pag: [{d: dia(9), n: cheia(M, 0)}, {d: hoje, n: [M[0], M[5], M[3], M[9]].map(t => mk(t))}]}
+};
+
+function achar(id) {
+  for (const l in estado) for (let pi = 0; pi < estado[l].pag.length; pi++) {
+    const i = estado[l].pag[pi].n.findIndex(e => e.id === id);
+    if (i >= 0) return {l, pi, i, e: estado[l].pag[pi].n[i]};
+  }
+}
+// Última página cheia => abre uma nova, em branco, com a data de hoje
+function livre(l) {
+  const ps = estado[l].pag;
+  if (ps[ps.length - 1].n.length >= N) ps.push({d: new Date(), n: []});
+}
+// Nomes longos encolhem até caber na linha (mínimo 13px)
+function ajustar(el) {
+  if (!el.clientWidth) return;
+  el.querySelectorAll('.nome').forEach(b => {
+    b.style.fontSize = '';
+    const sp = b.firstElementChild;
+    let s = parseFloat(getComputedStyle(b).fontSize);
+    while (sp.getBoundingClientRect().width > b.clientWidth && s > 13) b.style.fontSize = (s -= 1) + 'px';
+  });
+}
+function render(l) {
+  const el = $('p-' + l), prev = el.scrollLeft;
+  livre(l);
+  el.innerHTML = estado[l].pag.map(p => `<section class="pagina"><div class="data">${fmt(p.d)}</div><div class="linhas">` +
+    Array.from({length: N}, (_, i) => {
+      const e = p.n[i];
+      return `<div class="linha">${e && !e.oculto ? `<button class="nome" data-e="${e.id}"><span>${esc(e.texto)}</span></button>` : ''}</div>`;
+    }).join('') + `</div></section>`).join('');
+  el.scrollLeft = prev;
+  ajustar(el); atualizar();
+}
+const fim = (el, anim) => el.scrollTo({left: el.scrollWidth, behavior: anim ? suave : 'auto'});
+function atualizar() {
+  const el = $('p-' + atual), n = el.children.length, i = Math.round(el.scrollLeft / (el.clientWidth || 1));
+  $('pos').textContent = `Página ${i + 1} de ${n}`;
+  $('ant').disabled = i <= 0; $('prox').disabled = i >= n - 1;
+}
+const ir = d => { const el = $('p-' + atual); el.scrollBy({left: d * el.clientWidth, behavior: suave}); };
+
+// --- mensagens no rodapé
+function msg(t, desfazer = false) {
+  clearTimeout(tm);
+  $('msg').textContent = t; $('desf').hidden = !desfazer;
+  if (t) tm = setTimeout(() => msg(''), desfazer ? 60000 : 6000);
+}
+
+// --- escrever (mesma regra de formato do servidor; a lista de bloqueio fica só no servidor)
+const OK = /^\p{Script=Latin}[\p{Script=Latin} .'’-]*$/u;
+function validar(s) {
+  s = s.normalize('NFC').replace(/\s+/g, ' ').trim();
+  if (!s) return {erro: 'Escreva um nome.'};
+  if (s.split(' ').length > 6) return {erro: 'Use até 6 palavras.'};
+  if (s.length < 2 || !OK.test(s) || /\.\p{L}/u.test(s)) return {erro: 'Escreva só o nome, usando letras.'};
+  return {texto: s};
+}
+$('f').onsubmit = ev => {
+  ev.preventDefault();
+  const v = validar($('nome').value);
+  if (v.erro) return msg(v.erro);
+  livre(atual);
+  const ps = estado[atual].pag, e = mk(v.texto, true);
+  e.t = Date.now(); ultimo = e.id;
+  ps[ps.length - 1].n.push(e);
+  render(atual);
+  fim($('p-' + atual), true);      // se a página encheu, a nova desliza para dentro
+  msg('✓ Nome escrito', true);
+  $('nome').value = ''; $('nome').focus();
+};
+$('nome').oninput = () => { if ($('desf').hidden) msg(''); };
+
+// --- desfazer (60 s): se ainda for a última linha, remove; senão deixa em branco
+function desfazer(id) {
+  const r = achar(id);
+  if (!r || !r.e.propria || Date.now() - r.e.t > 6e4) return;
+  const ps = estado[r.l].pag;
+  while (ps.length > 1 && !ps[ps.length - 1].n.length) ps.pop();
+  const u = ps[ps.length - 1];
+  if (r.pi === ps.length - 1 && r.i === u.n.length - 1) { u.n.pop(); if (!u.n.length && ps.length > 1) ps.pop(); }
+  else r.e.oculto = true;
+  render(r.l); msg('');
+}
+$('desf').onclick = () => desfazer(ultimo);
+
+// --- folha inferior (denunciar / desfazer / sobre)
+function folha(t, p, acoes) {
+  $('f-t').textContent = t; $('f-p').textContent = p || '';
+  const a = $('f-a'); a.innerHTML = '';
+  acoes.forEach(([rot, fn, cls]) => {
+    const b = document.createElement('button');
+    b.textContent = rot; b.className = cls || '';
+    b.onclick = () => { fecha(); fn && fn(); };
+    a.appendChild(b);
+  });
+  $('folha').hidden = false; a.firstChild.focus();
+}
+const fecha = () => { $('folha').hidden = true; };
+$('folha').querySelector('.fundo').onclick = fecha;
+$('sobre').onclick = () => folha('Sobre',
+  'Aqui entram o propósito do livro, a política de privacidade e o e-mail para pedir a remoção de um nome.',
+  [['Fechar', null, 'sec']]);
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('.nome'); if (!b) return;
+  const r = achar(+b.dataset.e), pode = r.e.propria && Date.now() - r.e.t < 6e4;
+  folha(r.e.texto, '', [
+    ['Denunciar este nome', () => msg('Obrigado. Vamos olhar com cuidado.')],
+    ...(pode ? [['Desfazer', () => desfazer(r.e.id)]] : []),
+    ['Cancelar', null, 'sec']
+  ]);
+});
+
+// --- navegação
+$('ant').onclick = () => ir(-1); $('prox').onclick = () => ir(1);
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape') fecha();
+  if (ev.target.tagName === 'INPUT') return;
+  if (ev.key === 'ArrowLeft') ir(-1);
+  if (ev.key === 'ArrowRight') ir(1);
+});
+document.querySelectorAll('.aba').forEach(b => b.onclick = () => {
+  atual = b.dataset.l;
+  document.querySelectorAll('.aba').forEach(x => {
+    x.classList.toggle('ativo', x === b); x.setAttribute('aria-selected', x === b);
+  });
+  ['vivos', 'mortos'].forEach(l => $('p-' + l).hidden = l !== atual);
+  const el = $('p-' + atual); fim(el); ajustar(el); atualizar();
+});
+['vivos', 'mortos'].forEach(l => $('p-' + l).addEventListener('scroll', () => l === atual && atualizar(), {passive: true}));
+addEventListener('resize', () => ajustar($('p-' + atual)));
+
+// --- início: abre sempre na última página
+['vivos', 'mortos'].forEach(render);
+fim($('p-vivos')); requestAnimationFrame(atualizar);
+document.fonts.ready.then(() => ajustar($('p-' + atual)));
+</script>
+</body>
+</html>
