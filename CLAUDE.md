@@ -38,11 +38,20 @@ Aplicação web anônima, mobile first, de página única: um "livro" onde qualq
 - Supabase free pausa por inatividade e não tem backup automático: ping agendado e export semanal.
 
 ## Stack
-TypeScript, SvelteKit ou Next.js (a decidir, ver `docs/tarefas.md`), PWA, CSS puro, Supabase (Postgres + pg_cron), Vercel.
+SvelteKit 2 com TypeScript e Svelte 5, `adapter-vercel`, PWA, CSS puro (sem framework de estilo), Supabase (Postgres + pg_cron), Vercel.
 
 ## Como trabalhar
 - Faça a primeira tarefa pendente de `docs/tarefas.md`. Não pule etapas.
 - Mudou uma decisão? Atualize `docs/projeto.md` na mesma alteração.
 - Mexeu em `src/lib/nomes/`? Rode os testes.
 - Não invente regra de produto: pergunte.
-- Comandos (preencher depois do scaffold): instalar, rodar em dev, testes, lint.
+
+## Comandos
+| O quê | Comando |
+|---|---|
+| Instalar | `npm install` |
+| Rodar em dev | `npm run dev` (http://localhost:5173) |
+| Testes dos nomes | `npm test` (42 casos) |
+| Verificação de tipos | `npm run lint` (`svelte-check`) |
+| Build de produção | `npm run build` |
+| Ver o build | `npm run preview` |

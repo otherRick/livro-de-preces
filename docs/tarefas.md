@@ -8,10 +8,10 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 0. Base do projeto
 
-- [ ] Escolher SvelteKit ou Next.js (propor e justificar em 3 linhas).
-- [ ] Criar o projeto mantendo `db/`, `docs/`, `prototipo/`, `src/lib/nomes/`. Preencher a seção "Comandos" do `CLAUDE.md`.
-- [ ] `git init`, `.gitignore` (inclui `.env*`), `.env.example` (sem valores reais), commit inicial.
-- **Aceite:** projeto sobe em dev; `npx tsx --test src/lib/nomes/validar-nome.test.ts` passa (42 casos).
+- [x] **Decisão: SvelteKit 2 + TypeScript, deploy na Vercel (`adapter-vercel`).** Justificativa: o protótipo é HTML, CSS e DOM puros, e o Svelte compila para isso sem runtime de framework, então o porte da Tarefa 3 é quase cópia; as rotas de servidor (`+server.ts`) já são o lugar natural das chamadas com a `service_role` key, sem cliente no navegador; e o bundle menor ajuda o público-alvo em celular modesto.
+- [x] Criar o projeto mantendo `db/`, `docs/`, `prototipo/`, `src/lib/nomes/`. Preencher a seção "Comandos" do `CLAUDE.md`.
+- [x] `git init`, `.gitignore` (inclui `.env*`), `.env.example` (sem valores reais), commit inicial.
+- **Aceite:** projeto sobe em dev; `npx tsx --test src/lib/nomes/validar-nome.test.ts` passa (42 casos). ✅ verificado: dev responde HTTP 200, 42 testes passam, `npm run build` e `npm run lint` limpos.
 
 ## 1. Banco (Supabase de teste)
 

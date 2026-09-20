@@ -1,2 +1,9 @@
-# env files (can opt-in for committing if needed)
+node_modules/
+.svelte-kit/
+build/
+.vercel/
+.DS_Store
+
+# env files (o exemplo, sem valores reais, fica versionado)
 .env*
+!.env.example

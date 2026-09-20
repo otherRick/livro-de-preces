@@ -1,0 +1,25 @@
+{
+  "name": "livrodepreces",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "tsx --test src/lib/nomes/validar-nome.test.ts",
+    "lint": "svelte-check --tsconfig ./tsconfig.json",
+    "prepare": "svelte-kit sync"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-vercel": "^5.10.2",
+    "@sveltejs/kit": "^2.46.4",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@types/node": "^26.6.2",
+    "svelte": "^5.39.6",
+    "svelte-check": "^4.3.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.6"
+  }
+}
