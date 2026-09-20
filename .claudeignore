@@ -1,0 +1,29 @@
+# Svelte / SvelteKit / Vite (Pastas de compilação pesadas)
+.svelte-kit/
+.vite/
+node_modules/
+dist/
+build/
+
+# Configurações e Travas
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Arquivos específicos de PWA / Ativos visuais (Evita leitura de binários)
+public/icons/
+public/images/
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.ico
+*.webmanifest
+
+# Logs e Ambientes
+.env
+.env.*
+!.env.example
+*.log
+.git/
