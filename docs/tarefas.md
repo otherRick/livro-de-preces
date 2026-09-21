@@ -15,10 +15,10 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 1. Banco (Supabase de teste)
 
-- [ ] Criar um projeto Supabase SEPARADO só para teste. Rodar a Parte 1 de `db/schema.sql`.
-- [ ] Corrigir erros que aparecerem (o script nunca foi executado) e rodar os testes do rodapé do arquivo. Conferir acentos ("José", "Conceição", "D'Ávila", "Nguyễn").
-- [ ] Testar de verdade: quarentena não ocupa linha; aprovar dá a próxima linha; desfazer remove a última linha; 3 denúncias de IPs distintos ocultam; `somente_leitura` bloqueia.
-- **Aceite:** script roda limpo; cenários acima verificados com SQL ou testes automatizados.
+- [x] Criar um projeto Supabase SEPARADO só para teste. Rodar a Parte 1 de `db/schema.sql`.
+- [x] Corrigir erros que aparecerem (o script nunca foi executado) e rodar os testes do rodapé do arquivo. Conferir acentos ("José", "Conceição", "D'Ávila", "Nguyễn"). **Nenhuma correção foi necessária: a Parte 1 rodou limpa de primeira.**
+- [x] Testar de verdade: quarentena não ocupa linha; aprovar dá a próxima linha; desfazer remove a última linha; 3 denúncias de IPs distintos ocultam; `somente_leitura` bloqueia.
+- **Aceite:** script roda limpo; cenários acima verificados com SQL ou testes automatizados. ✅ `db/teste-cenarios.sql`: 14 cenários com `assert`, dentro de `begin … rollback`, todos passando no Supabase de teste.
 
 ## 2. Servidor (rotas)
 

@@ -5,7 +5,8 @@ Aplicação web anônima, mobile first, de página única: um "livro" onde qualq
 ## Onde está a verdade
 - `docs/projeto.md`: decisões e motivos. Leia antes de mudar qualquer regra de produto.
 - `prototipo/layout.html`: referência EXATA da experiência (layout, interação, textos). Reproduza fielmente, não redesenhe.
-- `db/schema.sql`: esquema Postgres/Supabase (ainda NÃO testado; ver `docs/tarefas.md`).
+- `db/schema.sql`: esquema Postgres/Supabase (Parte 1 já validada num Supabase de teste; `pg_cron` da Parte 2 fica para a Tarefa 6).
+- `db/teste-cenarios.sql`: cenários de aceite do banco (`assert`, em transação desfeita). Mexeu no schema? Rode de novo.
 - `src/lib/nomes/`: validação de nomes e lista de bloqueio, com testes.
 - `docs/tarefas.md`: ordem de trabalho e critérios de aceite.
 

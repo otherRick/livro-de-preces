@@ -97,7 +97,7 @@ Princípio: **cada nome é uma linha**, em uma tabela de **somente inserção**.
 | `sessao_hash` | quem denunciou (uma denúncia por sessão) |
 | `criado_em` | data/hora |
 
-> Esquema completo em `db/schema.sql` (ainda **não testado** em Postgres: validar num projeto de teste).
+> Esquema completo em `db/schema.sql`. A **Parte 1 foi executada num projeto Supabase de teste e rodou limpa**, sem nenhuma correção. Os cenários de aceite estão em `db/teste-cenarios.sql` (14 casos com `assert`, dentro de `begin … rollback`, todos passando). A Parte 2 (`pg_cron`) só entra na Tarefa 6.
 > Ajustes em relação ao rascunho acima: o `ip_hash` saiu da entrada e vive numa tabela de vida curta só para rate limit (nas denúncias é zerado após 7 dias); a tabela `paginas` guarda a data de abertura de cada página; ocultar uma entrada deixa a linha em branco sem deslocar as páginas seguintes; o botão de emergência (`somente_leitura`) é uma linha de configuração no banco.
 
 ---
@@ -240,7 +240,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 
 ## 13. Andamento
 
-1. [x] Esquema do banco: `db/schema.sql` (quarentena sem ocupar linha; 12 linhas por página).
+1. [x] Esquema do banco: `db/schema.sql` (quarentena sem ocupar linha; 12 linhas por página), validado num Supabase de teste com `db/teste-cenarios.sql`.
 2. [x] Validação e lista de bloqueio: `src/lib/nomes/` (formato, quarentena silenciosa, 42 testes).
 3. [x] Esqueleto do layout: protótipo com scroll-snap, dados falsos e sem backend (`prototipo/layout.html`; foi publicado como artefato para teste no celular).
 4. [x] Base do projeto: SvelteKit 2 + TypeScript sobre os arquivos existentes, `adapter-vercel`, `.env.example` e comandos no `CLAUDE.md` (Tarefa 0).
@@ -260,6 +260,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 | `docs/projeto.md` | Este documento: decisões e motivos |
 | `docs/tarefas.md` | Ordem de trabalho, critérios de aceite e prompt inicial |
 | `db/schema.sql` | Esquema do banco (PostgreSQL/Supabase) |
+| `db/teste-cenarios.sql` | Cenários de aceite do banco (`assert`, em transação desfeita) |
 | `prototipo/layout.html` | Referência exata da experiência (HTML único, dados falsos) |
 | `src/lib/nomes/validar-nome.ts` | Validação de formato e decisão visível/quarentena |
 | `src/lib/nomes/lista-bloqueio.ts` | Lista inicial de bloqueio (pt-BR) |
