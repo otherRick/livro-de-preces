@@ -15,10 +15,10 @@
 	let turnstileToken: string | null = null;
 	let timeoutMensagem: ReturnType<typeof setTimeout> | undefined;
 	export let data: { turnstileSitekey: string | null };
+	$: paginasAtuais = paginas[atual];
+	$: resumoAtual = resumos[atual];
 
 	const formatarData = (v: string) => new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(v));
-	const paginasDoLivro = () => paginas[atual];
-	const resumo = () => resumos[atual];
 	const podeDesfazer = (id: number) => recente?.id === id && Date.now() < recente.ate;
 	const movimento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
@@ -31,8 +31,8 @@
 		const ps = await Promise.all(ns.map(async (n) => { const d = await api<{ pagina: number; linhas: Linha[]; quarentenas: Quarentena[] }>(`/api/livro/${livro}/pagina/${n}${n === r.ultima_pagina ? '?ultima=1' : ''}`); return { numero: n, data: d.linhas[0]?.data_pagina ?? new Date().toISOString(), linhas: d.linhas, quarentenas: d.quarentenas }; }));
 		paginas = { ...paginas, [livro]: ps };
 	}
-	async function recarregar(livro: Livro, fim = false) { try { await carregar(livro); await tick(); if (fim && livro === atual) irPara(paginasDoLivro().length - 1, false); } catch (e) { avisar(e instanceof Error ? e.message : 'Não foi possível abrir o livro agora.'); } }
-	function irPara(i: number, animar = true) { const alvo = Math.max(0, Math.min(i, paginasDoLivro().length - 1)); scroller?.scrollTo({ left: alvo * scroller.clientWidth, behavior: animar ? movimento() : 'auto' }); paginaAtual = alvo; }
+	async function recarregar(livro: Livro, fim = false) { try { await carregar(livro); await tick(); if (fim && livro === atual) irPara(paginasAtuais.length - 1, false); } catch (e) { avisar(e instanceof Error ? e.message : 'Não foi possível abrir o livro agora.'); } }
+	function irPara(i: number, animar = true) { const alvo = Math.max(0, Math.min(i, paginasAtuais.length - 1)); scroller?.scrollTo({ left: alvo * scroller.clientWidth, behavior: animar ? movimento() : 'auto' }); paginaAtual = alvo; }
 	function rolou() { paginaAtual = Math.round(scroller.scrollLeft / (scroller.clientWidth || 1)); }
 	function validar(t: string) { const s = t.normalize('NFC').replace(/\s+/g, ' ').trim(); if (!s) return 'Escreva um nome.'; if (s.length > 40 || s.split(' ').length > 6) return 'Use até 40 letras e 6 palavras.'; if (s.length < 2 || !/^\p{Script=Latin}[\p{Script=Latin} .'’-]*$/u.test(s) || /\.\p{L}/u.test(s)) return 'Escreva só o nome, usando letras.'; return null; }
 	async function escrever() { const erro = validar(nome); if (erro) return avisar(erro); escrevendo = true; try { const d = await api<{ id: number }>('/api/escrever', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ livro: atual, texto: nome, sobrenome: '', turnstile: turnstileToken }) }); nome = ''; recente = { id: d.id, ate: Date.now() + 60_000 }; avisar('✓ Nome escrito', true); await recarregar(atual, true); } catch (e) { avisar(e instanceof Error ? e.message : 'Não deu para escrever agora.'); } finally { escrevendo = false; } }
@@ -51,14 +51,14 @@
 	{#each ['vivos', 'mortos'] as livro}<button class="aba" class:ativo={atual === livro} role="tab" aria-selected={atual === livro} onclick={() => trocar(livro as Livro)}>{livro === 'vivos' ? 'Vivos' : 'Mortos'}</button>{/each}
 </header>
 <main class="livro" aria-busy={carregando}>
-	<div class="nav"><button class="seta" aria-label="Página anterior" disabled={paginaAtual <= 0} onclick={() => irPara(paginaAtual - 1)}>‹</button><span aria-live="polite">Página {paginasDoLivro().length ? paginaAtual + 1 : 0} de {paginasDoLivro().length}</span><button class="seta" aria-label="Próxima página" disabled={paginaAtual >= paginasDoLivro().length - 1} onclick={() => irPara(paginaAtual + 1)}>›</button></div>
+	<div class="nav"><button class="seta" aria-label="Página anterior" disabled={paginaAtual <= 0} onclick={() => irPara(paginaAtual - 1)}>‹</button><span aria-live="polite">Página {paginasAtuais.length ? paginaAtual + 1 : 0} de {paginasAtuais.length}</span><button class="seta" aria-label="Próxima página" disabled={paginaAtual >= paginasAtuais.length - 1} onclick={() => irPara(paginaAtual + 1)}>›</button></div>
 	<div class="paginas" bind:this={scroller} onscroll={rolou}>
-		{#each paginasDoLivro() as pagina}<section class="pagina"><div class="data">{formatarData(pagina.data)}</div><div class="linhas" style={`--linhas:${resumo()?.linhas_por_pagina ?? 12}`}>
-			{#each Array(resumo()?.linhas_por_pagina ?? 12) as _, i}{@const linha = pagina.linhas.find((x) => x.linha === i + 1)}<div class="linha">{#if linha?.texto}<button class="nome" onclick={() => folha = { titulo: linha.texto!, entrada: linha }}><span>{linha.texto}</span></button>{/if}</div>{/each}
+		{#each paginasAtuais as pagina}<section class="pagina"><div class="data">{formatarData(pagina.data)}</div><div class="linhas" style={`--linhas:${resumoAtual?.linhas_por_pagina ?? 12}`}>
+			{#each Array(resumoAtual?.linhas_por_pagina ?? 12) as _, i}{@const linha = pagina.linhas.find((x) => x.linha === i + 1)}<div class="linha">{#if linha?.texto}<button class="nome" onclick={() => folha = { titulo: linha.texto!, entrada: linha }}><span>{linha.texto}</span></button>{/if}</div>{/each}
 		</div>{#if pagina.quarentenas.length}<div class="quarentenas">{#each pagina.quarentenas as entrada}<button class="nome" onclick={() => folha = { titulo: entrada.texto, entrada }}><span>{entrada.texto}</span></button>{/each}</div>{/if}</section>{/each}
 	</div>
 </main>
-<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumo()?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumo()?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if data.turnstileSitekey}<div id="turnstile"></div>{/if}</footer>
+<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumoAtual?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumoAtual?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if data.turnstileSitekey}<div id="turnstile"></div>{/if}</footer>
 {#if folha}<div class="folha"><button class="fundo" aria-label="Fechar" onclick={() => folha = null}></button><section class="painel" role="dialog" aria-modal="true"><h2>{folha.titulo}</h2>{#if folha.sobre}<p>Aqui entram o propósito do livro, a política de privacidade e o e-mail para pedir a remoção de um nome.</p>{/if}<div class="acoes">{#if folha.entrada}<button onclick={() => denunciar(folha!.entrada!.entrada_id)}>Denunciar este nome</button>{#if 'propria' in folha.entrada && folha.entrada.propria && podeDesfazer(folha.entrada.entrada_id)}<button onclick={() => desfazer(folha!.entrada!.entrada_id)}>Desfazer</button>{/if}{/if}<button class="sec" onclick={() => folha = null}>{folha.entrada ? 'Cancelar' : 'Fechar'}</button></div></section></div>{/if}
 
 <style>
