@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { env } from '$env/dynamic/public';
 	type Livro = 'vivos' | 'mortos';
 	type Linha = { linha: number; entrada_id: number; texto: string | null; propria: boolean; data_pagina: string };
 	type Quarentena = { entrada_id: number; texto: string; criado_em: string };
@@ -15,8 +14,9 @@
 	let scroller: HTMLDivElement;
 	let turnstileToken: string | null = null;
 	let timeoutMensagem: ReturnType<typeof setTimeout> | undefined;
+	export let data: { turnstileSitekey: string | null };
 
-	const data = (v: string) => new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(v));
+	const formatarData = (v: string) => new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(v));
 	const paginasDoLivro = () => paginas[atual];
 	const resumo = () => resumos[atual];
 	const podeDesfazer = (id: number) => recente?.id === id && Date.now() < recente.ate;
@@ -40,7 +40,8 @@
 	async function denunciar(id: number) { folha = null; try { await api('/api/denunciar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) }); avisar('Obrigado. Vamos olhar com cuidado.'); } catch (e) { avisar(e instanceof Error ? e.message : 'Não deu para fazer isso agora.'); } }
 	async function trocar(l: Livro) { atual = l; paginaAtual = Math.max(0, paginas[l].length - 1); await tick(); irPara(paginaAtual, false); }
 	onMount(async () => { try { await Promise.all([carregar('vivos'), carregar('mortos')]); await tick(); irPara(paginas.vivos.length - 1, false); } catch (e) { avisar(e instanceof Error ? e.message : 'Não foi possível abrir o livro agora.'); } finally { carregando = false; }
-		if (env.PUBLIC_TURNSTILE_SITEKEY) { const script = document.createElement('script'); script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; script.async = true; script.onload = () => (window as typeof window & { turnstile?: { render: (element: string, options: { sitekey: string; callback: (token: string) => void }) => void } }).turnstile?.render('#turnstile', { sitekey: env.PUBLIC_TURNSTILE_SITEKEY, callback: (token: string) => turnstileToken = token }); document.head.append(script); }
+		const sitekey = data.turnstileSitekey;
+		if (sitekey) { const script = document.createElement('script'); script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; script.async = true; script.onload = () => (window as typeof window & { turnstile?: { render: (element: string, options: { sitekey: string; callback: (token: string) => void }) => void } }).turnstile?.render('#turnstile', { sitekey, callback: (token: string) => turnstileToken = token }); document.head.append(script); }
 	});
 </script>
 
@@ -52,12 +53,12 @@
 <main class="livro" aria-busy={carregando}>
 	<div class="nav"><button class="seta" aria-label="Página anterior" disabled={paginaAtual <= 0} onclick={() => irPara(paginaAtual - 1)}>‹</button><span aria-live="polite">Página {paginasDoLivro().length ? paginaAtual + 1 : 0} de {paginasDoLivro().length}</span><button class="seta" aria-label="Próxima página" disabled={paginaAtual >= paginasDoLivro().length - 1} onclick={() => irPara(paginaAtual + 1)}>›</button></div>
 	<div class="paginas" bind:this={scroller} onscroll={rolou}>
-		{#each paginasDoLivro() as pagina}<section class="pagina"><div class="data">{data(pagina.data)}</div><div class="linhas" style={`--linhas:${resumo()?.linhas_por_pagina ?? 12}`}>
+		{#each paginasDoLivro() as pagina}<section class="pagina"><div class="data">{formatarData(pagina.data)}</div><div class="linhas" style={`--linhas:${resumo()?.linhas_por_pagina ?? 12}`}>
 			{#each Array(resumo()?.linhas_por_pagina ?? 12) as _, i}{@const linha = pagina.linhas.find((x) => x.linha === i + 1)}<div class="linha">{#if linha?.texto}<button class="nome" onclick={() => folha = { titulo: linha.texto!, entrada: linha }}><span>{linha.texto}</span></button>{/if}</div>{/each}
 		</div>{#if pagina.quarentenas.length}<div class="quarentenas">{#each pagina.quarentenas as entrada}<button class="nome" onclick={() => folha = { titulo: entrada.texto, entrada }}><span>{entrada.texto}</span></button>{/each}</div>{/if}</section>{/each}
 	</div>
 </main>
-<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumo()?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumo()?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if env.PUBLIC_TURNSTILE_SITEKEY}<div id="turnstile"></div>{/if}</footer>
+<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumo()?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumo()?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if data.turnstileSitekey}<div id="turnstile"></div>{/if}</footer>
 {#if folha}<div class="folha"><button class="fundo" aria-label="Fechar" onclick={() => folha = null}></button><section class="painel" role="dialog" aria-modal="true"><h2>{folha.titulo}</h2>{#if folha.sobre}<p>Aqui entram o propósito do livro, a política de privacidade e o e-mail para pedir a remoção de um nome.</p>{/if}<div class="acoes">{#if folha.entrada}<button onclick={() => denunciar(folha!.entrada!.entrada_id)}>Denunciar este nome</button>{#if 'propria' in folha.entrada && folha.entrada.propria && podeDesfazer(folha.entrada.entrada_id)}<button onclick={() => desfazer(folha!.entrada!.entrada_id)}>Desfazer</button>{/if}{/if}<button class="sec" onclick={() => folha = null}>{folha.entrada ? 'Cancelar' : 'Fechar'}</button></div></section></div>{/if}
 
 <style>
