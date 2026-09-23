@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "tsx --test src/lib/nomes/validar-nome.test.ts",
+    "test:api": "tsx --env-file=.env.local --test src/lib/server/api.test.ts",
     "lint": "svelte-check --tsconfig ./tsconfig.json",
     "prepare": "svelte-kit sync"
   },

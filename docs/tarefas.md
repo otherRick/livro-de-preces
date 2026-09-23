@@ -22,12 +22,12 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 2. Servidor (rotas)
 
-- [ ] Sessão anônima: token aleatório em cookie httpOnly; no banco só o HMAC. IP também só como HMAC.
-- [ ] `POST /api/escrever`: honeypot, Turnstile (uma vez por sessão), `validarNome`, `registrar_entrada` (status `visivel` ou `quarentena`). A resposta NÃO revela o motivo nem o filtro.
-- [ ] `GET /api/livro/:livro` (`resumo_livro`) e `GET /api/livro/:livro/pagina/:n` (`ler_pagina`; na última página, incluir `minhas_quarentenas` da sessão).
-- [ ] `POST /api/desfazer` e `POST /api/denunciar`.
-- [ ] Mapear erros do banco: `somente_leitura`, `limite_excedido`, `formato_invalido`, `nao_permitido`.
-- **Aceite:** testes de integração; a `service_role` key não aparece em nenhum código enviado ao navegador.
+- [x] Sessão anônima: token aleatório em cookie httpOnly; no banco só o HMAC. IP também só como HMAC.
+- [x] `POST /api/escrever`: honeypot, Turnstile (uma vez por sessão), `validarNome`, `registrar_entrada` (status `visivel` ou `quarentena`). A resposta NÃO revela o motivo nem o filtro.
+- [x] `GET /api/livro/:livro` (`resumo_livro`) e `GET /api/livro/:livro/pagina/:n` (`ler_pagina`; na última página, incluir `minhas_quarentenas` da sessão).
+- [x] `POST /api/desfazer` e `POST /api/denunciar`.
+- [x] Mapear erros do banco: `somente_leitura`, `limite_excedido`, `formato_invalido`, `nao_permitido`.
+- **Aceite:** testes de integração; a `service_role` key não aparece em nenhum código enviado ao navegador. ✅ verificado: `npm run test:api` com 12 testes passando contra o Supabase de teste; `service_role` key ausente do bundle do cliente; `npm run lint` e `npm run build` limpos.
 
 ## 3. Front-end
 

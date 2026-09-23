@@ -244,7 +244,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 2. [x] Validação e lista de bloqueio: `src/lib/nomes/` (formato, quarentena silenciosa, 42 testes).
 3. [x] Esqueleto do layout: protótipo com scroll-snap, dados falsos e sem backend (`prototipo/layout.html`; foi publicado como artefato para teste no celular).
 4. [x] Base do projeto: SvelteKit 2 + TypeScript sobre os arquivos existentes, `adapter-vercel`, `.env.example` e comandos no `CLAUDE.md` (Tarefa 0).
-5. [ ] Camada de servidor: rotas de escrever, ler, denunciar e desfazer; Turnstile; hashes HMAC de sessão e IP.
+5. [x] Camada de servidor: rotas de escrever, ler, denunciar e desfazer; Turnstile; hashes HMAC de sessão e IP.
 6. [ ] Painel simples do administrador (`revisao_pendente`, `moderar_entrada`).
 7. [ ] Texto de privacidade/LGPD e e-mail de remoção.
 8. [ ] Backup semanal e ping anti-pausa do Supabase.
