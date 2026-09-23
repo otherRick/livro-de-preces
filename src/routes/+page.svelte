@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { PUBLIC_TURNSTILE_SITEKEY } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	type Livro = 'vivos' | 'mortos';
 	type Linha = { linha: number; entrada_id: number; texto: string | null; propria: boolean; data_pagina: string };
 	type Quarentena = { entrada_id: number; texto: string; criado_em: string };
@@ -40,7 +40,7 @@
 	async function denunciar(id: number) { folha = null; try { await api('/api/denunciar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) }); avisar('Obrigado. Vamos olhar com cuidado.'); } catch (e) { avisar(e instanceof Error ? e.message : 'Não deu para fazer isso agora.'); } }
 	async function trocar(l: Livro) { atual = l; paginaAtual = Math.max(0, paginas[l].length - 1); await tick(); irPara(paginaAtual, false); }
 	onMount(async () => { try { await Promise.all([carregar('vivos'), carregar('mortos')]); await tick(); irPara(paginas.vivos.length - 1, false); } catch (e) { avisar(e instanceof Error ? e.message : 'Não foi possível abrir o livro agora.'); } finally { carregando = false; }
-		if (PUBLIC_TURNSTILE_SITEKEY) { const script = document.createElement('script'); script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; script.async = true; script.onload = () => (window as typeof window & { turnstile?: { render: (element: string, options: { sitekey: string; callback: (token: string) => void }) => void } }).turnstile?.render('#turnstile', { sitekey: PUBLIC_TURNSTILE_SITEKEY, callback: (token: string) => turnstileToken = token }); document.head.append(script); }
+		if (env.PUBLIC_TURNSTILE_SITEKEY) { const script = document.createElement('script'); script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; script.async = true; script.onload = () => (window as typeof window & { turnstile?: { render: (element: string, options: { sitekey: string; callback: (token: string) => void }) => void } }).turnstile?.render('#turnstile', { sitekey: env.PUBLIC_TURNSTILE_SITEKEY, callback: (token: string) => turnstileToken = token }); document.head.append(script); }
 	});
 </script>
 
@@ -57,7 +57,7 @@
 		</div>{#if pagina.quarentenas.length}<div class="quarentenas">{#each pagina.quarentenas as entrada}<button class="nome" onclick={() => folha = { titulo: entrada.texto, entrada }}><span>{entrada.texto}</span></button>{/each}</div>{/if}</section>{/each}
 	</div>
 </main>
-<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumo()?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumo()?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if PUBLIC_TURNSTILE_SITEKEY}<div id="turnstile"></div>{/if}</footer>
+<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumo()?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumo()?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if env.PUBLIC_TURNSTILE_SITEKEY}<div id="turnstile"></div>{/if}</footer>
 {#if folha}<div class="folha"><button class="fundo" aria-label="Fechar" onclick={() => folha = null}></button><section class="painel" role="dialog" aria-modal="true"><h2>{folha.titulo}</h2>{#if folha.sobre}<p>Aqui entram o propósito do livro, a política de privacidade e o e-mail para pedir a remoção de um nome.</p>{/if}<div class="acoes">{#if folha.entrada}<button onclick={() => denunciar(folha!.entrada!.entrada_id)}>Denunciar este nome</button>{#if 'propria' in folha.entrada && folha.entrada.propria && podeDesfazer(folha.entrada.entrada_id)}<button onclick={() => desfazer(folha!.entrada!.entrada_id)}>Desfazer</button>{/if}{/if}<button class="sec" onclick={() => folha = null}>{folha.entrada ? 'Cancelar' : 'Fechar'}</button></div></section></div>{/if}
 
 <style>
