@@ -1,3 +1,67 @@
-<!-- Placeholder da Tarefa 0. O livro entra na Tarefa 3, portado de prototipo/layout.html. -->
-<h1>Livro de Orações Online</h1>
-<p>Base do projeto no ar.</p>
+<script lang="ts">
+	import { onMount, tick } from 'svelte';
+	import { PUBLIC_TURNSTILE_SITEKEY } from '$env/static/public';
+	type Livro = 'vivos' | 'mortos';
+	type Linha = { linha: number; entrada_id: number; texto: string | null; propria: boolean; data_pagina: string };
+	type Quarentena = { entrada_id: number; texto: string; criado_em: string };
+	type Pagina = { numero: number; data: string; linhas: Linha[]; quarentenas: Quarentena[] };
+	type Resumo = { ultima_pagina: number; primeira_pagina_visivel: number | null; linhas_por_pagina: number; somente_leitura: boolean };
+
+	let atual: Livro = 'vivos', carregando = true, escrevendo = false, nome = '', mensagem = '', paginaAtual = 0;
+	let paginas: Record<Livro, Pagina[]> = { vivos: [], mortos: [] };
+	let resumos: Partial<Record<Livro, Resumo>> = {};
+	let recente: { id: number; ate: number } | null = null;
+	let folha: { titulo: string; sobre?: boolean; entrada?: Linha | Quarentena } | null = null;
+	let scroller: HTMLDivElement;
+	let turnstileToken: string | null = null;
+	let timeoutMensagem: ReturnType<typeof setTimeout> | undefined;
+
+	const data = (v: string) => new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(v));
+	const paginasDoLivro = () => paginas[atual];
+	const resumo = () => resumos[atual];
+	const podeDesfazer = (id: number) => recente?.id === id && Date.now() < recente.ate;
+	const movimento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+
+	function avisar(texto: string, manter = false) { if (timeoutMensagem) clearTimeout(timeoutMensagem); mensagem = texto; if (texto) timeoutMensagem = setTimeout(() => mensagem = '', manter ? 60_000 : 6_000); }
+	async function api<T>(url: string, init?: RequestInit): Promise<T> { const r = await fetch(url, init); const d = await r.json() as T & { erro?: string }; if (!r.ok) throw new Error(d.erro ?? 'Algo não funcionou aqui. Tente de novo em instantes.'); return d; }
+	async function carregar(livro: Livro) {
+		const r = await api<Resumo>(`/api/livro/${livro}`); resumos = { ...resumos, [livro]: r };
+		const inicio = r.primeira_pagina_visivel ?? 1;
+		const ns = Array.from({ length: Math.max(0, r.ultima_pagina - inicio + 1) }, (_, i) => inicio + i);
+		const ps = await Promise.all(ns.map(async (n) => { const d = await api<{ pagina: number; linhas: Linha[]; quarentenas: Quarentena[] }>(`/api/livro/${livro}/pagina/${n}${n === r.ultima_pagina ? '?ultima=1' : ''}`); return { numero: n, data: d.linhas[0]?.data_pagina ?? new Date().toISOString(), linhas: d.linhas, quarentenas: d.quarentenas }; }));
+		paginas = { ...paginas, [livro]: ps };
+	}
+	async function recarregar(livro: Livro, fim = false) { try { await carregar(livro); await tick(); if (fim && livro === atual) irPara(paginasDoLivro().length - 1, false); } catch (e) { avisar(e instanceof Error ? e.message : 'Não foi possível abrir o livro agora.'); } }
+	function irPara(i: number, animar = true) { const alvo = Math.max(0, Math.min(i, paginasDoLivro().length - 1)); scroller?.scrollTo({ left: alvo * scroller.clientWidth, behavior: animar ? movimento() : 'auto' }); paginaAtual = alvo; }
+	function rolou() { paginaAtual = Math.round(scroller.scrollLeft / (scroller.clientWidth || 1)); }
+	function validar(t: string) { const s = t.normalize('NFC').replace(/\s+/g, ' ').trim(); if (!s) return 'Escreva um nome.'; if (s.length > 40 || s.split(' ').length > 6) return 'Use até 40 letras e 6 palavras.'; if (s.length < 2 || !/^\p{Script=Latin}[\p{Script=Latin} .'’-]*$/u.test(s) || /\.\p{L}/u.test(s)) return 'Escreva só o nome, usando letras.'; return null; }
+	async function escrever() { const erro = validar(nome); if (erro) return avisar(erro); escrevendo = true; try { const d = await api<{ id: number }>('/api/escrever', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ livro: atual, texto: nome, sobrenome: '', turnstile: turnstileToken }) }); nome = ''; recente = { id: d.id, ate: Date.now() + 60_000 }; avisar('✓ Nome escrito', true); await recarregar(atual, true); } catch (e) { avisar(e instanceof Error ? e.message : 'Não deu para escrever agora.'); } finally { escrevendo = false; } }
+	async function desfazer(id = recente?.id) { if (!id || !podeDesfazer(id)) return; try { await api('/api/desfazer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) }); recente = null; folha = null; avisar(''); await recarregar(atual, true); } catch (e) { avisar(e instanceof Error ? e.message : 'Não deu para fazer isso agora.'); } }
+	async function denunciar(id: number) { folha = null; try { await api('/api/denunciar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) }); avisar('Obrigado. Vamos olhar com cuidado.'); } catch (e) { avisar(e instanceof Error ? e.message : 'Não deu para fazer isso agora.'); } }
+	async function trocar(l: Livro) { atual = l; paginaAtual = Math.max(0, paginas[l].length - 1); await tick(); irPara(paginaAtual, false); }
+	onMount(async () => { try { await Promise.all([carregar('vivos'), carregar('mortos')]); await tick(); irPara(paginas.vivos.length - 1, false); } catch (e) { avisar(e instanceof Error ? e.message : 'Não foi possível abrir o livro agora.'); } finally { carregando = false; }
+		if (PUBLIC_TURNSTILE_SITEKEY) { const script = document.createElement('script'); script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; script.async = true; script.onload = () => (window as typeof window & { turnstile?: { render: (element: string, options: { sitekey: string; callback: (token: string) => void }) => void } }).turnstile?.render('#turnstile', { sitekey: PUBLIC_TURNSTILE_SITEKEY, callback: (token: string) => turnstileToken = token }); document.head.append(script); }
+	});
+</script>
+
+<svelte:head><title>Livro de Orações Online</title></svelte:head>
+
+<header class="abas" role="tablist" aria-label="Livros">
+	{#each ['vivos', 'mortos'] as livro}<button class="aba" class:ativo={atual === livro} role="tab" aria-selected={atual === livro} onclick={() => trocar(livro as Livro)}>{livro === 'vivos' ? 'Vivos' : 'Mortos'}</button>{/each}
+</header>
+<main class="livro" aria-busy={carregando}>
+	<div class="nav"><button class="seta" aria-label="Página anterior" disabled={paginaAtual <= 0} onclick={() => irPara(paginaAtual - 1)}>‹</button><span aria-live="polite">Página {paginasDoLivro().length ? paginaAtual + 1 : 0} de {paginasDoLivro().length}</span><button class="seta" aria-label="Próxima página" disabled={paginaAtual >= paginasDoLivro().length - 1} onclick={() => irPara(paginaAtual + 1)}>›</button></div>
+	<div class="paginas" bind:this={scroller} onscroll={rolou}>
+		{#each paginasDoLivro() as pagina}<section class="pagina"><div class="data">{data(pagina.data)}</div><div class="linhas" style={`--linhas:${resumo()?.linhas_por_pagina ?? 12}`}>
+			{#each Array(resumo()?.linhas_por_pagina ?? 12) as _, i}{@const linha = pagina.linhas.find((x) => x.linha === i + 1)}<div class="linha">{#if linha?.texto}<button class="nome" onclick={() => folha = { titulo: linha.texto!, entrada: linha }}><span>{linha.texto}</span></button>{/if}</div>{/each}
+		</div>{#if pagina.quarentenas.length}<div class="quarentenas">{#each pagina.quarentenas as entrada}<button class="nome" onclick={() => folha = { titulo: entrada.texto, entrada }}><span>{entrada.texto}</span></button>{/each}</div>{/if}</section>{/each}
+	</div>
+</main>
+<footer class="rodape"><div class="estado" aria-live="polite"><span>{mensagem}</span>{#if recente}<button onclick={() => desfazer()}>Desfazer</button>{/if}<button class="sobre" onclick={() => folha = { titulo: 'Sobre', sobre: true }}>Sobre</button></div><form onsubmit={(e) => { e.preventDefault(); escrever(); }} autocomplete="off"><input bind:value={nome} maxlength="40" placeholder="Escreva um nome…" enterkeyhint="send" autocapitalize="words" autocorrect="off" spellcheck="false" aria-label="Nome" disabled={escrevendo || resumo()?.somente_leitura}/><input class="isca" name="sobrenome" tabindex="-1" autocomplete="off" aria-hidden="true"/><button class="enviar" disabled={escrevendo || resumo()?.somente_leitura}>{escrevendo ? 'Escrevendo…' : 'Escrever'}</button></form>{#if PUBLIC_TURNSTILE_SITEKEY}<div id="turnstile"></div>{/if}</footer>
+{#if folha}<div class="folha"><button class="fundo" aria-label="Fechar" onclick={() => folha = null}></button><section class="painel" role="dialog" aria-modal="true"><h2>{folha.titulo}</h2>{#if folha.sobre}<p>Aqui entram o propósito do livro, a política de privacidade e o e-mail para pedir a remoção de um nome.</p>{/if}<div class="acoes">{#if folha.entrada}<button onclick={() => denunciar(folha!.entrada!.entrada_id)}>Denunciar este nome</button>{#if 'propria' in folha.entrada && folha.entrada.propria && podeDesfazer(folha.entrada.entrada_id)}<button onclick={() => desfazer(folha!.entrada!.entrada_id)}>Desfazer</button>{/if}{/if}<button class="sec" onclick={() => folha = null}>{folha.entrada ? 'Cancelar' : 'Fechar'}</button></div></section></div>{/if}
+
+<style>
+	:global(:root){--capa:#5b3f2e;--capa-txt:#f3e8d3;--papel:#fbf5e6;--pauta:#c5d3e0;--margem:#e1a0a0;--tinta:#243654;--suave:#6b6558;--acento:#e3aa5a;--acento-txt:#2a1c10;--dobra:rgba(60,40,20,.14);--mao:'Patrick Hand','Segoe Print','Bradley Hand','Comic Sans MS',cursive;--sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--capa)}:global(*){box-sizing:border-box}:global(body){height:100dvh;margin:0;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none;background:var(--capa);color:var(--tinta);font-family:var(--sans)}button{font-family:inherit;cursor:pointer}:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+	.abas{display:flex;gap:6px;padding:10px 8px 0}.aba{flex:1;min-height:52px;border:2px solid rgb(243 232 211 / .35);border-bottom:0;border-radius:14px 14px 0 0;font:700 20px var(--sans);background:rgb(0 0 0 / .22);color:var(--capa-txt);opacity:.72}.aba.ativo{position:relative;z-index:1;border-color:var(--papel);background:var(--papel);color:var(--tinta);opacity:1;box-shadow:0 -3px 0 var(--acento)}.livro{flex:1;min-height:0;display:flex;flex-direction:column;margin:0 8px;background:var(--papel);box-shadow:0 2px 8px rgb(0 0 0 / .35)}.nav{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;border-bottom:1px solid var(--pauta)}.nav span{font-size:18px;color:var(--suave)}.seta{width:56px;height:44px;font-size:32px;line-height:1;background:none;color:var(--tinta);border:2px solid var(--pauta);border-radius:10px}.seta:disabled{opacity:.3;cursor:default}.paginas{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.paginas::-webkit-scrollbar{display:none}.pagina{flex:0 0 100%;min-width:0;display:flex;flex-direction:column;position:relative;scroll-snap-align:start;scroll-snap-stop:always;background:linear-gradient(90deg,var(--dobra) 0,transparent 16px),var(--papel)}.pagina::before{content:'';position:absolute;top:0;bottom:0;left:40px;width:2px;background:var(--margem)}.data{padding:8px 16px 2px 52px;font:22px var(--mao);color:var(--suave);border-bottom:1px solid var(--pauta)}.linhas{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--linhas),minmax(0,1fr))}.linha{display:flex;align-items:flex-end;min-width:0;overflow:hidden;padding:0 12px 1px 52px;border-bottom:1px solid var(--pauta)}.nome{display:flex;align-items:flex-end;width:100%;height:100%;min-width:0;padding:0;border:0;background:none;text-align:left;color:var(--tinta);font:clamp(17px,3.4vh,26px)/1.1 var(--mao);white-space:nowrap;overflow:hidden}.nome span{overflow:hidden;text-overflow:ellipsis}.quarentenas{padding:8px 12px 8px 52px;border-top:1px dashed var(--pauta)}.quarentenas .nome{height:auto;min-height:32px}.rodape{padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px));color:var(--capa-txt)}.estado{display:flex;align-items:center;gap:10px;min-height:36px;font-size:17px}.estado button{background:none;border:0;color:var(--acento);font:700 17px var(--sans);text-decoration:underline;padding:6px 4px;min-height:36px}.sobre{margin-left:auto}.rodape form{display:flex;gap:8px}.rodape input{flex:1;min-width:0;height:54px;padding:0 14px;font:22px var(--mao);border-radius:12px;border:2px solid transparent;background:var(--papel);color:var(--tinta)}.rodape input.isca{position:absolute;left:-10000px;width:1px;height:1px;padding:0}.rodape input::placeholder{color:var(--suave)}.enviar{height:54px;padding:0 20px;font:700 19px var(--sans);border:0;border-radius:12px;background:var(--acento);color:var(--acento-txt)}.folha{position:fixed;inset:0;z-index:10}.fundo{position:absolute;inset:0;width:100%;border:0;background:rgb(0 0 0 / .5)}.painel{position:absolute;left:0;right:0;bottom:0;background:var(--papel);border-radius:18px 18px 0 0;padding:20px 16px calc(16px + env(safe-area-inset-bottom,0px))}.painel h2{font:400 28px var(--mao);margin:0 0 6px;word-break:break-word}.painel p{margin:0 0 8px;color:var(--suave);font:17px/1.4 var(--sans)}.acoes button{display:block;width:100%;min-height:54px;margin-top:8px;font:700 18px var(--sans);border-radius:12px;border:2px solid var(--tinta);background:var(--acento);color:var(--acento-txt)}.acoes .sec{background:none;color:var(--tinta)}#turnstile{margin-top:8px}
+	@media (prefers-color-scheme:dark){:global(:root:not([data-theme="light"])){--capa:#2a211a;--papel:#211d17;--pauta:#38424f;--margem:#7b4848;--tinta:#eadfc8;--suave:#a89f8e;--dobra:rgba(0,0,0,.45)}}
+</style>
