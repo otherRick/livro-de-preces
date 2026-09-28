@@ -31,13 +31,13 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 3. Front-end
 
-- [ ] Portar `prototipo/layout.html` fielmente (abas, scroll-snap, setas, campo de escrita, folha de denúncia, desfazer, tema escuro, fonte manuscrita).
-- [ ] Ligar às rotas. O autor vê os próprios nomes em quarentena ao fim do livro, como se estivessem escritos.
+- [x] Portar `prototipo/layout.html` fielmente (abas, scroll-snap, setas, campo de escrita, folha de denúncia, desfazer, tema escuro, fonte manuscrita).
+- [x] Ligar às rotas. O autor vê os próprios nomes em quarentena ao fim do livro, como se estivessem escritos.
 - **Aceite:** mesma experiência do protótipo em celular real (iPhone e Android), incluindo o teclado sem cobrir o campo de escrita.
 
 ## 4. Administração
 
-- [ ] Página simples e protegida só para o dono: lista `revisao_pendente`, botões aprovar/ocultar (`moderar_entrada`), liga/desliga `somente_leitura`.
+- [x] Página simples e protegida só para o dono: lista `revisao_pendente`, botões aprovar/ocultar (`moderar_entrada`), liga/desliga `somente_leitura`. A senha fica em `ADMIN_SENHA`; a sessão administrativa é um cookie `httpOnly` assinado no servidor.
 
 ## 5. Texto legal
 

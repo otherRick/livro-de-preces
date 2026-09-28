@@ -48,6 +48,36 @@ export async function rpc<T>(funcao: string, argumentos: Record<string, unknown>
 	return corpo ? (JSON.parse(corpo) as T) : (null as T);
 }
 
+/**
+ * Consulta uma relação interna do PostgREST. Só pode ser usada em rotas de
+ * servidor; a service_role permanece neste módulo e nunca vai ao navegador.
+ */
+export async function consultar<T>(caminho: string, init: RequestInit = {}): Promise<T> {
+	const chave = ambiente('SUPABASE_SERVICE_ROLE_KEY');
+	const resposta = await fetch(`${ambiente('SUPABASE_URL')}/rest/v1/${caminho}`, {
+		...init,
+		headers: {
+			apikey: chave,
+			Authorization: `Bearer ${chave}`,
+			Accept: 'application/json',
+			...init.headers
+		}
+	});
+	const corpo = await resposta.text();
+
+	if (!resposta.ok) {
+		let mensagem = `http_${resposta.status}`;
+		try {
+			mensagem = JSON.parse(corpo).message ?? mensagem;
+		} catch {
+			// corpo não-JSON: fica o http_NNN
+		}
+		throw new ErroBanco(mensagem);
+	}
+
+	return corpo ? (JSON.parse(corpo) as T) : (null as T);
+}
+
 export type Livro = 'vivos' | 'mortos';
 
 export const ehLivro = (v: unknown): v is Livro => v === 'vivos' || v === 'mortos';
