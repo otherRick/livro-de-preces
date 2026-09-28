@@ -45,7 +45,7 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 6. Operação
 
-- [ ] `pg_cron` (Parte 2 do schema): limpeza horária dos registros temporários de limite de envio e manutenção diária para expirar dados. Decisão do dono: sem keep-alive e sem backup; o projeto poderá ser reativado manualmente se o Supabase gratuito pausá-lo.
+- [x] `pg_cron` (Parte 2 do schema): limpeza horária dos registros temporários de limite de envio e manutenção diária para expirar dados. ✅ Jobs criados no Supabase de produção. Decisão do dono: sem keep-alive e sem backup; o projeto poderá ser reativado manualmente se o Supabase gratuito pausá-lo.
 - [x] Documentar variáveis de ambiente em `.env.example`.
 
 ## 7. Publicação

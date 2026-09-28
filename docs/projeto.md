@@ -247,7 +247,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 5. [x] Camada de servidor: rotas de escrever, ler, denunciar e desfazer; Turnstile; hashes HMAC de sessão e IP.
 6. [x] Painel simples do administrador em `/admin`: senha em variável de ambiente, cookie `httpOnly` assinado, fila `revisao_pendente`, aprovar/ocultar e botão de emergência de somente leitura.
 7. [ ] Texto de privacidade/LGPD e e-mail de remoção.
-8. [ ] Agendamentos internos do Supabase: limpeza horária do rate limit e manutenção diária de retenção. Sem ping anti-pausa nem backup, por decisão do dono.
+8. [x] Agendamentos internos do Supabase: limpeza horária do rate limit e manutenção diária de retenção, ativos em produção. Sem ping anti-pausa nem backup, por decisão do dono.
 9. [ ] PWA e domínio.
 
 ---
