@@ -41,7 +41,7 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 5. Texto legal
 
-- [ ] Preencher "Sobre": finalidade, privacidade (nomes de terceiros, IP como hash, retenção) e e-mail de remoção. Revisar com um profissional.
+- [ ] Preencher "Sobre": finalidade, privacidade (nomes de terceiros, IP como hash, retenção) e e-mail de remoção. ✅ Texto publicado com o canal de remoção; falta revisão com um profissional.
 
 ## 6. Operação
 

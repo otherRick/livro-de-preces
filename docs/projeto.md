@@ -231,7 +231,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 - [ ] Prazo de **exibição** no livro dos vivos: assumido **90 dias** (confirmar).
 - [ ] Prazo de **retenção** no banco: assumido **90 dias** após o fim da exibição (confirmar).
 - [ ] Alfabetos além do latino (ex.: tibetano, chinês) devem ser aceitos?
-- [ ] Texto curto de LGPD e e-mail de contato para remoção.
+- [x] Texto de privacidade e canal de remoção publicados no "Sobre" (`yabderick@gmail.com`). Revisão profissional ainda recomendada antes de divulgação ampla.
 - [ ] Decidir se a IA de moderação entra desde o início ou só depois.
 - [ ] Definir a rotina de backup semanal.
 - [ ] Fonte manuscrita e paleta do papel.
