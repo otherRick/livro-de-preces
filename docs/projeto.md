@@ -206,8 +206,8 @@ Fluxo em camadas:
 O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites gratuitos não devem ser um problema.
 
 **Supabase (grátis)**
-- Projetos inativos são **pausados após cerca de uma semana** sem uso. Mitigação: ping agendado.
-- **Sem backup automático** no plano grátis. Mitigação: **export semanal** do banco para um local próprio.
+- Projetos inativos podem ser pausados. Decisão: não criar keep-alive; o dono aceita reativá-los manualmente, se necessário.
+- Não haverá backup: os nomes são transitórios e podem se perder, como nos livros físicos.
 
 **Vercel (Hobby)**
 - Restrito a uso **não comercial**. Não colocar doações nem anúncios.
@@ -233,7 +233,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 - [ ] Alfabetos além do latino (ex.: tibetano, chinês) devem ser aceitos?
 - [x] Texto de privacidade e canal de remoção publicados no "Sobre" (`yabderick@gmail.com`). Revisão profissional ainda recomendada antes de divulgação ampla.
 - [ ] Decidir se a IA de moderação entra desde o início ou só depois.
-- [ ] Definir a rotina de backup semanal.
+- [x] Sem rotina de backup: decisão consciente do dono; os nomes são transitórios.
 - [ ] Fonte manuscrita e paleta do papel.
 
 ---
@@ -247,7 +247,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 5. [x] Camada de servidor: rotas de escrever, ler, denunciar e desfazer; Turnstile; hashes HMAC de sessão e IP.
 6. [x] Painel simples do administrador em `/admin`: senha em variável de ambiente, cookie `httpOnly` assinado, fila `revisao_pendente`, aprovar/ocultar e botão de emergência de somente leitura.
 7. [ ] Texto de privacidade/LGPD e e-mail de remoção.
-8. [ ] Backup semanal e ping anti-pausa do Supabase.
+8. [ ] Agendamentos internos do Supabase: limpeza horária do rate limit e manutenção diária de retenção. Sem ping anti-pausa nem backup, por decisão do dono.
 9. [ ] PWA e domínio.
 
 ---
