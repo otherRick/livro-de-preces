@@ -51,4 +51,4 @@ Marque `[x]` ao concluir e registre em `docs/projeto.md` qualquer decisão nova.
 
 ## 7. Publicação
 
-- [ ] PWA (manifest, ícones), `noindex`, domínio (opcional), deploy na Vercel Hobby.
+- [x] PWA (manifest, ícone, service worker), `noindex` e deploy na Vercel Hobby. Domínio próprio permanece opcional.

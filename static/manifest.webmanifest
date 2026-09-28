@@ -1,0 +1,19 @@
+{
+  "name": "Livro de Orações Online",
+  "short_name": "Livro de Orações",
+  "description": "Um livro simples de intenções de oração.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#5b3f2e",
+  "theme_color": "#5b3f2e",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

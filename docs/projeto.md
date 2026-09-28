@@ -248,7 +248,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 6. [x] Painel simples do administrador em `/admin`: senha em variável de ambiente, cookie `httpOnly` assinado, fila `revisao_pendente`, aprovar/ocultar e botão de emergência de somente leitura.
 7. [ ] Texto de privacidade/LGPD e e-mail de remoção.
 8. [ ] Agendamentos internos do Supabase: limpeza horária do rate limit e manutenção diária de retenção, ativos em produção. Keep-alive da Vercel implementado a cada quatro dias; falta configurar o segredo e confirmar a primeira execução. Sem backup, por decisão do dono.
-9. [ ] PWA e domínio.
+9. [x] PWA instalável (manifesto, ícone e service worker), `noindex` e deploy na Vercel Hobby. Domínio permanece opcional.
 
 ---
 
