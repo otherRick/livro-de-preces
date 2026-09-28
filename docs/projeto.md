@@ -206,7 +206,7 @@ Fluxo em camadas:
 O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites gratuitos não devem ser um problema.
 
 **Supabase (grátis)**
-- Projetos inativos podem ser pausados. Decisão: não criar keep-alive; o dono aceita reativá-los manualmente, se necessário.
+- Projetos inativos podem ser pausados. A Vercel executa uma consulta autenticada ao banco a cada quatro dias para manter atividade.
 - Não haverá backup: os nomes são transitórios e podem se perder, como nos livros físicos.
 
 **Vercel (Hobby)**
@@ -247,7 +247,7 @@ O projeto é só texto, com linhas minúsculas (~50 bytes por nome). Os limites 
 5. [x] Camada de servidor: rotas de escrever, ler, denunciar e desfazer; Turnstile; hashes HMAC de sessão e IP.
 6. [x] Painel simples do administrador em `/admin`: senha em variável de ambiente, cookie `httpOnly` assinado, fila `revisao_pendente`, aprovar/ocultar e botão de emergência de somente leitura.
 7. [ ] Texto de privacidade/LGPD e e-mail de remoção.
-8. [x] Agendamentos internos do Supabase: limpeza horária do rate limit e manutenção diária de retenção, ativos em produção. Sem ping anti-pausa nem backup, por decisão do dono.
+8. [ ] Agendamentos internos do Supabase: limpeza horária do rate limit e manutenção diária de retenção, ativos em produção. Keep-alive da Vercel implementado a cada quatro dias; falta configurar o segredo e confirmar a primeira execução. Sem backup, por decisão do dono.
 9. [ ] PWA e domínio.
 
 ---

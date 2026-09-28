@@ -27,7 +27,12 @@ select cron.schedule(
 
 Após executar, confirme que os dois aparecem em **Cron → Jobs**. Se precisar refazer um job, exclua-o no painel antes de executar novamente; não crie duplicados.
 
+## Keep-alive da Vercel
+
+O arquivo `vercel.json` agenda `GET /api/keep-alive` em `0 12 */4 * *` (UTC): dias 1, 5, 9, 13, 17, 21, 25 e 29 de cada mês, às 09:00 em Brasília. A rota faz uma consulta autenticada ao banco e não coleta nem devolve nomes.
+
+Na Vercel, crie `CRON_SECRET` nos ambientes de produção, preview e desenvolvimento com um valor aleatório de pelo menos 16 caracteres. Após salvar a variável, faça um novo deploy. A Vercel envia esse valor automaticamente no cabeçalho de autorização da chamada agendada.
+
 ## Decisões de operação
 
-- Não há keep-alive. Um projeto gratuito que seja pausado por inatividade será reativado manualmente pelo dono no painel do Supabase.
 - Não há backup. Os nomes são transitórios e a perda deles é aceitável para este projeto.

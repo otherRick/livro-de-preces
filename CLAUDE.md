@@ -36,7 +36,7 @@ Aplicação web anônima, mobile first, de página única: um "livro" onde qualq
 
 ### Custo: tudo gratuito
 - Vercel Hobby (uso não comercial: sem anúncios nem doações), Supabase free, Turnstile grátis. IA de moderação é opcional e nunca pode ser dependência.
-- Supabase free pode pausar por inatividade. Não usar keep-alive nem backup: o dono aceita reativar manualmente se necessário e que os nomes possam se perder.
+- Supabase free pode pausar por inatividade. A Vercel chama `/api/keep-alive` a cada quatro dias, com `CRON_SECRET`, para manter atividade no banco. Não há backup: o dono aceita que os nomes possam se perder.
 
 ## Stack
 SvelteKit 2 com TypeScript e Svelte 5, `adapter-vercel`, PWA, CSS puro (sem framework de estilo), Supabase (Postgres + pg_cron), Vercel.
